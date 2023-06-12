@@ -1,3 +1,9 @@
+package BinomialHeap;
+
+import java.util.HashSet;
+import java.util.Set;
+
+
 /**
  * BinomialHeap
  *
@@ -9,13 +15,17 @@ public class BinomialHeap
 	public int size;
 	public HeapNode last;
 	public HeapNode min;
-	public int numOfTrees;
 	
-	public BinomialHeap(int size, HeapNode last, HeapNode min, int numOfTrees) {
+	public BinomialHeap(int size, HeapNode last, HeapNode min) {
 		this.size = size;
 		this.last = last;
 		this.min = min;
-		this.numOfTrees = numOfTrees;
+	}
+	
+	public BinomialHeap() {
+		this.size = 0;
+		this.last = null;
+		this.min = null;
 	}
 
 	/**
@@ -28,11 +38,11 @@ public class BinomialHeap
 	public HeapItem insert(int key, String info) 
 	{    
 		HeapNode node = new HeapNode();
-		node.item = new HeapItem(node, key, info)
+		node.item = new HeapItem(node, key, info);
 		node.rank = 0;
+		node.next = node;		
 				
-				
-		BinomialHeap heap2 = new BinomialHeap(1, node, node, 1);
+		BinomialHeap heap2 = new BinomialHeap(1, node, node);
 		
 		this.meld(heap2);
 		
@@ -50,14 +60,13 @@ public class BinomialHeap
 			this.size = 0;
 			this.last = null;
 			this.min = null;
-			this.numOfTrees = 0;
 			return;
 		}
 		
 		HeapNode child = this.min.child;
 		HeapNode curr = this.min.next;
 		
-		BinomialHeap bin2 = new BinomialHeap(Math.pow(2, this.min.rank), child, child, this.min.rank);
+		BinomialHeap bin2 = new BinomialHeap((int)Math.pow(2, this.min.rank), child, child);
 		
 		while(curr.next != this.min) {
 			curr = curr.next;
@@ -93,7 +102,7 @@ public class BinomialHeap
 		
 		while(curr.next != this.last) {
 			if(curr.item.key < min.item.key) {
-				this.min = curr
+				this.min = curr;
 			}
 			curr = curr.next;
 		}
@@ -140,42 +149,60 @@ public class BinomialHeap
 	 */
 	public void meld(BinomialHeap heap2)
 	{
+		HeapNode tmp;
+		
+		if(this.size() == 0) {
+			this.last = heap2.last;
+			this.size = heap2.size;
+			this.min = heap2.min;
+			return;
+		}
+		
+		this.size += heap2.size;
+		
 		if(heap2.size == 1) {
-			HeapNode tmp = this.last.next;
+			tmp = this.last.next;
 			this.last.next = heap2.last;
 			heap2.last.next = tmp;
 			
 		}
 		else {
-			if(heap2.min < this.min) {
+			if(heap2.min.item.key < this.min.item.key) {
 				this.min = heap2.min;
 			}
-			this.size += heap2.size;
 			
-			HeapNode curr = heap2.last.next;
-			while(curr.next != heap2.last) {
-				curr = curr.next;
-			}
-			HeapNode tmp = this.last.next;
+			tmp = this.last.next;
 			this.last.next = heap2.last;
 		}
-		HeapNode curr = heap2.last.next;
 		
-		HeapNode[] buckets = new HeapNode[this.numOfTrees()];
-		buckets[curr.rank] = curr;
-		curr = curr.next;
-		while(curr.next != tmp) {
-			int tmpRank = curr.rank;
-			if (buckets[tmpRank] == null) {
-				buckets[tmpRank] = curr;
-			}
-			else {
-				curr = link(curr, buckets[tmpRank]);
-			}
+		
+		if (this.size == 2) {
+			this.last = link(this.last,this.last.next);
+			return;
 		}
 		
-		//MAINTAIN LAST AND PARENTS/CHILDREN
 		
+		HeapNode curr = heap2.last.next;
+		
+		HeapNode[] buckets = new HeapNode[this.numTrees()+1];
+		buckets[curr.rank] = curr;
+		curr = curr.next;
+		
+		while(curr.next.item.key != tmp.item.key) {
+			System.out.print("ahhhh \n");
+			int tmpRank = curr.rank;
+			if (buckets[tmpRank] == null) {
+				System.out.println(tmpRank+" "+ curr.item.key+" " + curr.rank);
+				buckets[tmpRank] = curr;
+				curr = curr.next;
+			}
+			else {
+				System.out.println(buckets[tmpRank].item.key+ " currr is:" +curr.item.key);
+				curr = link(curr, buckets[tmpRank]);
+				buckets[tmpRank] = null;
+				System.out.println(curr.item.key);
+			}
+		}
 	}
 
 	/**
@@ -206,7 +233,7 @@ public class BinomialHeap
 	 */
 	public int numTrees()
 	{
-		return this.numOfTrees;
+		return (int)(Math.log(this.size)/Math.log(2));
 	}
 	
 	public HeapNode link(HeapNode node1, HeapNode node2) {
@@ -215,13 +242,90 @@ public class BinomialHeap
 			node1.item = node2.item;
 			node2.item = tmp;
 		}
-		node2.next = node1.child;
+		if(node1.child == null) {
+			node2.next = node2;
+		}
+		else {
+			node2.next = node1.child;
+		}
+		
 		node1.child = node2;
-		this.numOfTrees --;
+		node2.parent = node1;
 		node1.rank ++;
+		//System.out.println(node1.item.key+" "+node1.rank+" "+node2.item.key+" "+node2.rank);
+		System.out.println(node1.item.key+" is curr. next is "+node1.next.item.key);
 		return node1;
 	}
 
+	public HeapNode findPrevLast(HeapNode node) {
+		HeapNode curr = node;
+		while(curr.next.item.key != node.item.key) {
+			curr = curr.next;
+		}
+		
+		return curr;
+	}
+	
+	
+	public void print() {
+		System.out.println("Binomial Heap:");
+		System.out.println("Size: " + size);
+
+		if (min != null) {
+			System.out.println("Minimum Node: " + min.item.key);
+		} else {
+			System.out.println("No minimum node.");
+		}
+
+		System.out.println("Heap Nodes:");
+		if (last != null) {
+			Set<HeapNode> visited = new HashSet<>();
+			printHeapNode(last, 0, visited);
+		} else {
+			System.out.println("No heap nodes.");
+		}
+	}
+
+	private void printHeapNode(HeapNode node, int indentLevel, Set<HeapNode> visited) {
+		StringBuilder indent = new StringBuilder();
+		for (int i = 0; i < indentLevel; i++) {
+			indent.append("    ");
+		}
+
+		System.out.println(indent + "Key: " + node.item.key);
+		System.out.println(indent + "Info: " + node.item.info);
+		System.out.println(indent + "Rank: " + node.rank);
+
+		visited.add(node);
+
+		if (node.child != null && !visited.contains(node.child)) {
+			System.out.println(indent + "Child:");
+			printHeapNode(node.child, indentLevel + 1, visited);
+		}
+
+		if (node.next != null && !visited.contains(node.next)) {
+			System.out.println(indent + "Sibling:");
+			printHeapNode(node.next, indentLevel, visited);
+		}
+	}
+
+
+	
+	public static void main(String args[]) {
+		BinomialHeap bin = new BinomialHeap();
+		bin.insert(1, "First");
+		bin.insert(2, "Second");
+		bin.insert(3, "Third");
+		bin.insert(4, "Fourth");
+		bin.print();
+	}
+	
+	
+	
+	
+	
+	
+	
 	/**
 	 * Class implementing a node in a Binomial Heap.
 	 *  
@@ -267,3 +371,8 @@ public class BinomialHeap
 	}
 
 }
+
+
+
+
+
