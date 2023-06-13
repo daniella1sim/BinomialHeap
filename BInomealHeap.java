@@ -175,32 +175,25 @@ public class BinomialHeap
 			this.last.next = heap2.last;
 		}
 		
+		HeapNode curr = this.last;
 		
-		if (this.size == 2) {
-			this.last = link(this.last,this.last.next);
-			return;
-		}
-		
-		
-		HeapNode curr = heap2.last.next;
+		//System.out.println(curr.item.key);
 		
 		HeapNode[] buckets = new HeapNode[this.numTrees()+1];
 		buckets[curr.rank] = curr;
+		//System.out.println(buckets[curr.rank].item.key);
 		curr = curr.next;
+		//System.out.println(buckets[curr.rank].item.key);
 		
-		while(curr.next.item.key != tmp.item.key) {
-			System.out.print("ahhhh \n");
+		for(int i=0; i<buckets.length; i++) {
 			int tmpRank = curr.rank;
 			if (buckets[tmpRank] == null) {
-				System.out.println(tmpRank+" "+ curr.item.key+" " + curr.rank);
 				buckets[tmpRank] = curr;
 				curr = curr.next;
 			}
 			else {
-				System.out.println(buckets[tmpRank].item.key+ " currr is:" +curr.item.key);
-				curr = link(curr, buckets[tmpRank]);
+				curr = link(buckets[tmpRank], curr);
 				buckets[tmpRank] = null;
-				System.out.println(curr.item.key);
 			}
 		}
 	}
@@ -252,8 +245,6 @@ public class BinomialHeap
 		node1.child = node2;
 		node2.parent = node1;
 		node1.rank ++;
-		//System.out.println(node1.item.key+" "+node1.rank+" "+node2.item.key+" "+node2.rank);
-		System.out.println(node1.item.key+" is curr. next is "+node1.next.item.key);
 		return node1;
 	}
 
@@ -313,10 +304,11 @@ public class BinomialHeap
 	
 	public static void main(String args[]) {
 		BinomialHeap bin = new BinomialHeap();
-		bin.insert(1, "First");
-		bin.insert(2, "Second");
-		bin.insert(3, "Third");
-		bin.insert(4, "Fourth");
+		for(int i=1; i<5; i++) {
+			bin.insert(i, i+"'th");
+		}
+		
+		
 		bin.print();
 	}
 	
