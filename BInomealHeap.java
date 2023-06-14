@@ -204,6 +204,38 @@ public class BinomialHeap
 				bucketTotal[i] = carry;
 				carry = null;
 			}
+		}	
+		
+		int counter = 0;
+		for(int i=0; i<bucketTotal.length ;i++) {
+			if(bucketTotal[i] != null) {
+				counter ++;
+			}
+		}
+		
+		HeapNode[] cleanBucket = new HeapNode[counter];
+		int indexer = 0;
+		
+		for(int i=0; i<bucketTotal.length ;i++) {
+			if(bucketTotal[i] != null) {
+				cleanBucket[indexer] = bucketTotal[i];
+				indexer ++;
+			}
+		}
+		
+		this.last = cleanBucket[cleanBucket.length-1];
+		this.last.next = cleanBucket[0];
+		
+		for(int i=0; i<cleanBucket.length-1; i++) {
+			cleanBucket[i].next = cleanBucket[i+1];
+		}
+		
+		HeapItem newMin = this.findMin();
+		for(int i=0; i<cleanBucket.length; i++) {
+			if(cleanBucket[i].item == newMin) {
+				this.min = cleanBucket[i];
+				break;
+			}
 		}
 	}
 
@@ -325,7 +357,7 @@ public class BinomialHeap
 	
 	public static void main(String args[]) {
 		BinomialHeap bin = new BinomialHeap();
-		for(int i=1; i<5; i++) {
+		for(int i=1; i<7; i++) {
 			bin.insert(i, i+"'th");
 		}
 		
