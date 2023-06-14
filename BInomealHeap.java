@@ -15,17 +15,20 @@ public class BinomialHeap
 	public int size;
 	public HeapNode last;
 	public HeapNode min;
+	public int numOftrees;
 	
-	public BinomialHeap(int size, HeapNode last, HeapNode min) {
+	public BinomialHeap(int size, HeapNode last, HeapNode min, int num) {
 		this.size = size;
 		this.last = last;
 		this.min = min;
+		this.numOfTrees = num;
 	}
 	
 	public BinomialHeap() {
 		this.size = 0;
 		this.last = null;
 		this.min = null;
+		this.numOftrees = 0;
 	}
 
 	/**
@@ -42,7 +45,7 @@ public class BinomialHeap
 		node.rank = 0;
 		node.next = node;		
 				
-		BinomialHeap heap2 = new BinomialHeap(1, node, node);
+		BinomialHeap heap2 = new BinomialHeap(1, node, node, 1);
 		
 		this.meld(heap2);
 		
@@ -66,7 +69,7 @@ public class BinomialHeap
 		HeapNode child = this.min.child;
 		HeapNode curr = this.min.next;
 		
-		BinomialHeap bin2 = new BinomialHeap((int)Math.pow(2, this.min.rank), child, child);
+		BinomialHeap bin2 = new BinomialHeap((int)Math.pow(2, this.min.rank), child, child, this.min.rank);
 		
 		while(curr.next != this.min) {
 			curr = curr.next;
@@ -213,6 +216,7 @@ public class BinomialHeap
 			}
 		}
 		
+		this.numOftrees = counter;
 		HeapNode[] cleanBucket = new HeapNode[counter];
 		int indexer = 0;
 		
@@ -229,14 +233,14 @@ public class BinomialHeap
 		for(int i=0; i<cleanBucket.length-1; i++) {
 			cleanBucket[i].next = cleanBucket[i+1];
 		}
-		
-		HeapItem newMin = this.findMin();
-		for(int i=0; i<cleanBucket.length; i++) {
-			if(cleanBucket[i].item == newMin) {
-				this.min = cleanBucket[i];
-				break;
-			}
-		}
+		this.findMin();
+		//HeapItem newMin = this.findMin();
+		//for(int i=0; i<cleanBucket.length; i++) {
+		//	if(cleanBucket[i].item == newMin) {
+		//		this.min = cleanBucket[i];
+		//		break;
+		//	}
+		//}
 	}
 
 	/**
@@ -266,14 +270,8 @@ public class BinomialHeap
 	 * 
 	 */
 	public int numTrees()
-	{
-		HeapNode curr = this.last;
-		int counter = 0;
-		while(curr.next != this.last) {
-			counter ++;
-		}
-		
-		return counter;
+	{	
+		return this.numOftrees;
 	}
 	
 	public HeapNode link(HeapNode node1, HeapNode node2) {
@@ -293,7 +291,7 @@ public class BinomialHeap
 		smaller.child = bigger;
 		bigger.parent = smaller;
 		
-		smaller.rank ++;
+		smaller.rank++;
 		
 		if(childOfSmaller == null) {
 			bigger.next = bigger;
@@ -352,23 +350,15 @@ public class BinomialHeap
 			printHeapNode(node.next, indentLevel, visited);
 		}
 	}
-
-
 	
 	public static void main(String args[]) {
 		BinomialHeap bin = new BinomialHeap();
 		for(int i=1; i<7; i++) {
 			bin.insert(i, i+"'th");
-		}
-		
+		}	
 		
 		bin.print();
 	}
-	
-	
-	
-	
-	
 	
 	
 	/**
@@ -416,8 +406,3 @@ public class BinomialHeap
 	}
 
 }
-
-
-
-
-
