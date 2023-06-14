@@ -86,8 +86,6 @@ public class BinomialHeap
 		
 		bin2.findMin();
 		this.meld(bin2);
-		
-
 	}
 
 	/**
@@ -149,7 +147,6 @@ public class BinomialHeap
 	 */
 	public void meld(BinomialHeap heap2)
 	{
-		HeapNode tmp;
 		
 		if(this.size() == 0) {
 			this.last = heap2.last;
@@ -158,43 +155,72 @@ public class BinomialHeap
 			return;
 		}
 		
+		/*
+		 * if(heap2.size == 1) { tmp = this.last.next; this.last.next = heap2.last;
+		 * heap2.last.next = tmp;
+		 * 
+		 * } else { if(heap2.min.item.key < this.min.item.key) { this.min = heap2.min; }
+		 * 
+		 * tmp = this.last.next; this.last.next = heap2.last; }
+		 */
+		
+		int amountTrees1 = this.maxRank();
+		int amountTrees2 = heap2.maxRank();
+		
+		int minAmount = Math.min(amountTrees1, amountTrees2); 
+		
 		this.size += heap2.size;
+		int totalTrees = this.maxRank();
 		
-		if(heap2.size == 1) {
-			tmp = this.last.next;
-			this.last.next = heap2.last;
-			heap2.last.next = tmp;
-			
-		}
-		else {
-			if(heap2.min.item.key < this.min.item.key) {
-				this.min = heap2.min;
-			}
-			
-			tmp = this.last.next;
-			this.last.next = heap2.last;
+		HeapNode[] bucket1 = new HeapNode[amountTrees1 + 1];
+		HeapNode[] bucket2 = new HeapNode[amountTrees2 + 1];
+		HeapNode[] bucketTotal = new HeapNode[totalTrees + 1];
+		
+		HeapNode pointer1 = this.last;
+		for(int i=0; i<amountTrees1; i++) {
+			int tmpRank = pointer1.rank;
+			bucket1[tmpRank] = pointer1;
+			pointer1 = pointer1.next;
 		}
 		
-		HeapNode curr = this.last;
-		
-		//System.out.println(curr.item.key);
-		
-		HeapNode[] buckets = new HeapNode[this.numTrees()+1];
-		buckets[curr.rank] = curr;
-		//System.out.println(buckets[curr.rank].item.key);
-		curr = curr.next;
-		//System.out.println(buckets[curr.rank].item.key);
-		
-		for(int i=0; i<buckets.length; i++) {
-			int tmpRank = curr.rank;
-			if (buckets[tmpRank] == null) {
-				buckets[tmpRank] = curr;
-				curr = curr.next;
+		for(int i=0; i<bucket1.length; i++) {
+			if(bucket1[i] != null) {
+				System.out.println(bucket1[i].item.key);
 			}
-			else {
-				curr = link(buckets[tmpRank], curr);
-				buckets[tmpRank] = null;
+			
+		}
+		System.out.println("1 is done ");
+		
+		HeapNode pointer2 = heap2.last;
+		for(int i=0; i<amountTrees2; i++) {
+			int tmpRank = pointer2.rank;
+			bucket2[tmpRank] = pointer2;
+			pointer2 = pointer2.next;
+		}
+		
+		for(int i=0; i<bucket2.length; i++) {
+			if(bucket2[i] != null) {
+				System.out.println(bucket2[i].item.key);
 			}
+		}
+		
+		for(int i=0; i<bucketTotal.length ;i++) {
+			if(i > bucket1.length) {
+				bucketTotal[i] = bucket2[i];
+			}
+			if(i > bucket2.length) {
+				bucketTotal[i] = bucket1[i];
+			}
+			if (bucket1[i] != null && bucket2[i] == null) {
+				bucketTotal[i] = bucket1[i];
+			}
+			else if (bucket1[i] == null && bucket2[i] != null) {
+				bucketTotal[i] = bucket2[i];
+			}
+			else if(bucket1[i] != null && bucket2[i] != null) {
+				bucketTotal[i+1] = link(bucket1[i], bucket2[i]);
+			}
+			
 		}
 	}
 
@@ -226,37 +252,49 @@ public class BinomialHeap
 	 */
 	public int numTrees()
 	{
-		return (int)(Math.log(this.size)/Math.log(2));
+		HeapNode curr = this.last;
+		int counter = 0;
+		while(curr.next != this.last) {
+			counter ++;
+		}
+		
+		return counter;
 	}
 	
 	public HeapNode link(HeapNode node1, HeapNode node2) {
-		if(node1.item.key > node2.item.key) {
-			HeapItem tmp = node1.item;
-			node1.item = node2.item;
-			node2.item = tmp;
-		}
-		if(node1.child == null) {
-			node2.next = node2;
+		HeapNode smaller;
+		HeapNode bigger;
+		
+		if(node1.item.key < node2.item.key) {
+			smaller = node1;
+			bigger = node2;
 		}
 		else {
-			node2.next = node1.child;
+			smaller = node2;
+			bigger = node1;
 		}
 		
-		node1.child = node2;
-		node2.parent = node1;
-		node1.rank ++;
-		return node1;
-	}
-
-	public HeapNode findPrevLast(HeapNode node) {
-		HeapNode curr = node;
-		while(curr.next.item.key != node.item.key) {
-			curr = curr.next;
+		HeapNode childOfSmaller = smaller.child;
+		smaller.child = bigger;
+		bigger.parent = smaller;
+		
+		smaller.rank ++;
+		
+		if(childOfSmaller == null) {
+			bigger.next = bigger;
+		}
+		else {
+			bigger.next = childOfSmaller;
+			childOfSmaller.next = bigger;
 		}
 		
-		return curr;
+		return smaller;
 	}
 	
+	
+	public int maxRank() {
+		return (int)(Math.log(this.size)/Math.log(2));
+	}
 	
 	public void print() {
 		System.out.println("Binomial Heap:");
