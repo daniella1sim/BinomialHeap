@@ -154,26 +154,15 @@ public class BinomialHeap
 			this.min = heap2.min;
 			return;
 		}
-		
-		/*
-		 * if(heap2.size == 1) { tmp = this.last.next; this.last.next = heap2.last;
-		 * heap2.last.next = tmp;
-		 * 
-		 * } else { if(heap2.min.item.key < this.min.item.key) { this.min = heap2.min; }
-		 * 
-		 * tmp = this.last.next; this.last.next = heap2.last; }
-		 */
-		
+
 		int amountTrees1 = this.maxRank();
 		int amountTrees2 = heap2.maxRank();
-		
-		int minAmount = Math.min(amountTrees1, amountTrees2); 
 		
 		this.size += heap2.size;
 		int totalTrees = this.maxRank();
 		
-		HeapNode[] bucket1 = new HeapNode[amountTrees1 + 1];
-		HeapNode[] bucket2 = new HeapNode[amountTrees2 + 1];
+		HeapNode[] bucket1 = new HeapNode[totalTrees + 1];
+		HeapNode[] bucket2 = new HeapNode[totalTrees + 1];
 		HeapNode[] bucketTotal = new HeapNode[totalTrees + 1];
 		
 		HeapNode pointer1 = this.last;
@@ -183,14 +172,6 @@ public class BinomialHeap
 			pointer1 = pointer1.next;
 		}
 		
-		for(int i=0; i<bucket1.length; i++) {
-			if(bucket1[i] != null) {
-				System.out.println(bucket1[i].item.key);
-			}
-			
-		}
-		System.out.println("1 is done ");
-		
 		HeapNode pointer2 = heap2.last;
 		for(int i=0; i<amountTrees2; i++) {
 			int tmpRank = pointer2.rank;
@@ -198,29 +179,31 @@ public class BinomialHeap
 			pointer2 = pointer2.next;
 		}
 		
-		for(int i=0; i<bucket2.length; i++) {
-			if(bucket2[i] != null) {
-				System.out.println(bucket2[i].item.key);
-			}
-		}
-		
+		HeapNode carry = null;
 		for(int i=0; i<bucketTotal.length ;i++) {
-			if(i > bucket1.length) {
-				bucketTotal[i] = bucket2[i];
-			}
-			if(i > bucket2.length) {
+			if (bucket1[i] != null && bucket2[i] == null && carry == null) {
 				bucketTotal[i] = bucket1[i];
 			}
-			if (bucket1[i] != null && bucket2[i] == null) {
-				bucketTotal[i] = bucket1[i];
-			}
-			else if (bucket1[i] == null && bucket2[i] != null) {
+			else if (bucket1[i] == null && bucket2[i] != null && carry == null) {
 				bucketTotal[i] = bucket2[i];
 			}
-			else if(bucket1[i] != null && bucket2[i] != null) {
-				bucketTotal[i+1] = link(bucket1[i], bucket2[i]);
+			else if(bucket1[i] != null && bucket2[i] != null && carry == null) {
+				carry = link(bucket1[i], bucket2[i]);
 			}
-			
+			else if(bucket1[i] == null && bucket2[i] != null && carry != null) {
+				carry = link(bucket2[i], carry);
+			}
+			else if(bucket1[i] != null && bucket2[i] == null && carry != null) {
+				carry = link(bucket1[i], carry);
+			}
+			else if(bucket1[i] != null && bucket2[i] != null && carry != null) {
+				bucketTotal[i] = carry;
+				carry = link(bucket1[i], bucket1[i]);
+			}
+			else if(bucket1[i] == null && bucket2[i] == null && carry != null) {
+				bucketTotal[i] = carry;
+				carry = null;
+			}
 		}
 	}
 
@@ -293,7 +276,7 @@ public class BinomialHeap
 	
 	
 	public int maxRank() {
-		return (int)(Math.log(this.size)/Math.log(2));
+		return (int)(Math.log(this.size)/Math.log(2))+1;
 	}
 	
 	public void print() {
