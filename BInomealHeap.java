@@ -2,6 +2,9 @@
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 
 /**
@@ -12,6 +15,10 @@ import java.util.Set;
  */
 public class BinomialHeap
 {
+	
+	public static int counter = 0;
+	public static int deleteCounter = 0;
+	
 	public int size;
 	public HeapNode last;
 	public HeapNode min;
@@ -74,6 +81,8 @@ public class BinomialHeap
 	 */
 	public void deleteMin()
 	{
+		deleteCounter += this.min.rank;
+		
 		if(this.size == 1) {
 			this.size = 0;
 			this.last = null;
@@ -349,6 +358,9 @@ public class BinomialHeap
 	}
 	
 	public HeapNode link(HeapNode node1, HeapNode node2) {
+		
+		counter ++;
+		
 		HeapNode smaller;
 		HeapNode bigger;
 		
@@ -371,13 +383,8 @@ public class BinomialHeap
 			bigger.next = bigger;
 			return smaller;
 		}
-		bigger.next = childOfSmaller;
-		
-		HeapNode lastChildOfSmaller = childOfSmaller;
-		while (lastChildOfSmaller.next != childOfSmaller) {
-			lastChildOfSmaller = lastChildOfSmaller.next;
-		}
-		lastChildOfSmaller.next = bigger;
+		bigger.next = childOfSmaller.next;
+		childOfSmaller.next = bigger;
 		
 		return smaller;
 	}
@@ -436,16 +443,47 @@ public class BinomialHeap
 	public static void main(String args[]) {
 		BinomialHeap bh1 = new BinomialHeap();
         int n=0;
+        
         for (int i=1; i<6; i++) {
         	bh1 = new BinomialHeap();
         	n = (int) Math.pow(3, i+5);
         	n--;
-        	for(int j=1; j<n+1; j++) {
-            	bh1.insert(j, "i");
+        
+        	Integer[] intArray = new Integer[n];
+        	for (int k=1; k<=n; k++) {
+        		intArray[k-1] = k;
         	}
         	
+        	List<Integer> intList = Arrays.asList(intArray);
+        	Collections.shuffle(intList);
+        	intList.toArray(intArray);
+        	
+			
+			  long start = System.currentTimeMillis();
+			  
+			  for(int j=0; j<n; j++) {
+				  bh1.insert(j, "j");
+			  }
+			  
+			  int diff = n - (int)Math.pow(2,5) + 1;
+				/*
+				 * for (int a=0; a<n/2; a++) { bh1.deleteMin(); }
+				 */
+			  long finish = System.currentTimeMillis();
+			  long delta = finish - start;
+			  int numtree = bh1.numTrees();
+			  
+			  System.out.println("i is: "+i+" counter is: "+counter+" delta time is: "+
+			  delta+" num of trees: " + numtree);
+			  System.out.println("delete counter is: "+deleteCounter);
+			  System.out.println("n is "+n);
+			  System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+			  counter = 0;
+			  deleteCounter = 0;
+			 
         }
 	}
+
 	
 	
 	
